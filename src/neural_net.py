@@ -75,7 +75,7 @@ class TwoLayerNet(object):
         # shape (N, C).                                                             #
         #############################################################################
         Z_layer1 = np.dot(X,W1)+b1
-        A_layer1 = self.relu(Z_layer1)
+        A_layer1 = self.leaky_relu(Z_layer1)
         Z_layer2 = np.dot(A_layer1,W2)+b2
         scores = self.softmax(Z_layer2)
 
@@ -125,7 +125,7 @@ class TwoLayerNet(object):
         derivative_W2 = np.dot(np.transpose(A_layer1),delta_output)+reg*W2
         derivative_b2 = np.sum(delta_output)
 
-        dRelu = self.derivative_relu(A_layer1)
+        dRelu = self.derivative_leaky_relu(A_layer1)
         delta_hidden = delta_output.dot(np.transpose(W2))*dRelu
         derivative_W1 = np.dot(np.transpose(X),delta_hidden)+reg*W1
         derivative_b1 = np.sum(delta_hidden)
@@ -269,7 +269,7 @@ class TwoLayerNet(object):
         b2 = self.params['b2']
 
         Z_layer1 = np.dot(X,W1)+b1
-        A_layer1 = self.relu(Z_layer1)
+        A_layer1 = self.leaky_relu(Z_layer1)
         Z_layer2 = np.dot(A_layer1,W2)+b2
         scores = self.softmax(Z_layer2)
 
@@ -317,8 +317,10 @@ class TwoLayerNet(object):
 
     def softmax(self,X):
         exponent = np.exp(X)
+        sum_of_exponent = np.sum(exponent,axis=1, keepdims=True)
+        print sum_of_exponent
         # Collate everything to one axis so that every example has a softmax value
-        softmax = exponent/np.sum(exponent,axis=1, keepdims=True)
+        softmax = exponent/sum_of_exponent
         return softmax
 
     def derivative_relu(self, X):
