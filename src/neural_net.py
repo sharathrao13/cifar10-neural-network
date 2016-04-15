@@ -101,7 +101,7 @@ class TwoLayerNet(object):
         data_loss = np.sum(-np.log(delta_output))
         data_loss = data_loss/float(N)
 
-        L2_regularization=reg*0.5*(np.sum(np.sqrt(W1))+np.sum(np.square(W2)))
+        L2_regularization=reg*0.5*(np.sum(np.square(W1))+np.sum(np.square(W2)))
         loss = data_loss+L2_regularization
 
         #############################################################################
@@ -116,29 +116,24 @@ class TwoLayerNet(object):
         # grads['W1'] should store the gradient on W1, and be a matrix of same size #
         #############################################################################
 
+        print "The delta Output "
         print np.shape(delta_output)
 
         #delta_output is examples x output size
         #Activation at layer 1 is examples x hidden_size
         #w2 is hidden_size x classes, so we need the transpose the Activation
-        update_to_W2 = np.dot(np.transpose(A_layer1)*delta_output)+reg*W2
-        update_to_B2 = np.sum(delta_output)
+        derivative_W2 = np.dot(np.transpose(A_layer1),delta_output)+reg*W2
+        derivative_b2 = np.sum(delta_output)
 
         dRelu = self.derivative_relu(A_layer1)
         delta_hidden = delta_output.dot(np.transpose(W2))*dRelu
-        update_to_W1 = np.dot(np.transpose(X)*delta_hidden)+reg*W1
-        update_to_B1 = np.sum(delta_hidden)
+        derivative_W1 = np.dot(np.transpose(X),delta_hidden)+reg*W1
+        derivative_b1 = np.sum(delta_hidden)
 
-        W1+=update_to_W1
-        W2+=update_to_W2
-        b1+=update_to_B1
-        b2+=update_to_B2
-
-
-        grads['W1'] =W1
-        grads['W2'] =W2
-        grads['B1'] =b1
-        grads['B2'] =b2
+        grads['W1'] =derivative_W1
+        grads['W2'] =derivative_W2
+        grads['b1'] =derivative_b1
+        grads['b2'] =derivative_b2
 
         #############################################################################
         #                              END OF YOUR CODE                             #
@@ -176,6 +171,7 @@ class TwoLayerNet(object):
         val_acc_history = []
 
         for it in xrange(num_iters):
+            print 'Iteration %s'%it
             X_batch = None
             y_batch = None
 
@@ -184,8 +180,8 @@ class TwoLayerNet(object):
             # them in X_batch and y_batch respectively.                             #
             #########################################################################
 
-            X_batch = X[batch_size, :]
-            y_batch = y[batch_size,:]
+            X_batch = X[0:batch_size, :]
+            y_batch = y[batch_size]
 
             #########################################################################
             #                             END OF YOUR CODE                          #
@@ -201,10 +197,27 @@ class TwoLayerNet(object):
             # using stochastic gradient descent. You'll need to use the gradients   #
             # stored in the grads dictionary defined above.                         #
             #########################################################################
-            self.params['W1'] = grads['W1']
-            self.params['b1'] = grads['b1']
-            self.params['W2'] = grads['W2']
-            self.params['b2'] = grads['b2']
+
+            update_to_W1 = grads['W1']
+            update_to_b1 = grads['b1']
+            update_to_W2 = grads['W2']
+            update_to_b2 = grads['b2']
+
+            W1 = self.params['W1']
+            b1 = self.params['b1']
+            W2 = self.params['W2']
+            b2 = self.params['b2']
+
+            W1-=learning_rate*update_to_W1
+            W2-=learning_rate*update_to_W2
+            b1-=learning_rate*update_to_b1
+            b2-=learning_rate*update_to_b2
+
+
+            self.params['W1'] = W1
+            self.params['b1'] = b1
+            self.params['W2'] = W2
+            self.params['b2'] = b2
 
             #########################################################################
             #                             END OF YOUR CODE                          #
@@ -261,6 +274,7 @@ class TwoLayerNet(object):
         scores = self.softmax(Z_layer2)
 
         y_pred = np.argmax(scores, axis=1)
+        print "Printing some predictions "
         print y_pred
 
 
@@ -292,12 +306,14 @@ class TwoLayerNet(object):
             for j in range(0, np.shape(xw)[1]):
                 xw[i][j] = max(0.0, xw[i][j])
                 # print xw[i][j]
+        return xw
 
     def leaky_relu(self, xw):
         for i in range(0, np.shape(xw)[0]):
             for j in range(0, np.shape(xw)[1]):
                 xw[i][j] = max(0.01*xw[i][j], xw[i][j])
                 # print xw[i][j]
+        return xw
 
     def softmax(self,X):
         exponent = np.exp(X)
