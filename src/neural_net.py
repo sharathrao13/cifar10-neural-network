@@ -97,7 +97,8 @@ class TwoLayerNet(object):
         # classifier loss. So that your results match ours, multiply the            #
         # regularization loss by 0.5                                                #
         #############################################################################
-        delta_output = y-scores
+        delta_output = self.replace_zero_with_small_value(y-scores)
+
         data_loss = np.sum(-np.log(delta_output))
         data_loss = data_loss/float(N)
 
@@ -317,8 +318,7 @@ class TwoLayerNet(object):
 
     def softmax(self,X):
         exponent = np.exp(X)
-        sum_of_exponent = np.sum(exponent,axis=1, keepdims=True)
-        print sum_of_exponent
+        sum_of_exponent = self.replace_zero_with_small_value(np.sum(exponent,axis=1, keepdims=True))
         # Collate everything to one axis so that every example has a softmax value
         softmax = exponent/sum_of_exponent
         return softmax
@@ -339,4 +339,12 @@ class TwoLayerNet(object):
                     X[i][j] = 1
                 else:
                     X[i][j] = 0
+        return X
+
+    def replace_zero_with_small_value(self, X):
+        for i in range(0, np.shape(X)[0]):
+            for j in range(0, np.shape(X)[1]):
+                if(X[i][j]==0.0):
+                    X[i][j]=0.000001
+
         return X
