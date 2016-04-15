@@ -8,11 +8,11 @@ if __name__ == '__main__':
     # Find val set
     # Find good reg
 
-    learning_rate = 0.001
+    learning_rate = 0.01
     learning_rate_decay = 0.95
-    reg = 0.00001
-    num_iters = 1
-    batch_size = 100
+    reg = 0.008
+    num_iters = 100
+    batch_size = 10000
     verbose = True
 
     print "Training ..."
@@ -21,4 +21,5 @@ if __name__ == '__main__':
              reg, num_iters,
              batch_size, verbose)
 
+    print "Accuracy "
     print nn.accuracy(X_test,y_test)
