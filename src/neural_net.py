@@ -242,6 +242,18 @@ class TwoLayerNet(object):
             b1+= -learning_rate*update_to_b1
             b2+= -learning_rate*update_to_b2
 
+            print "Printing the min of weights and biases "
+            print np.amin(W1)
+            print np.amin(b1)
+            print np.amin(W2)
+            print np.amin(b2)
+
+            print "Printing the max of weights and biases "
+            print np.amax(W1)
+            print np.amax(b1)
+            print np.amax(W2)
+            print np.amax(b2)
+
 
             self.params['W1'] = W1
             self.params['b1'] = b1
