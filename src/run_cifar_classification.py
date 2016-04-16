@@ -11,8 +11,8 @@ if __name__ == '__main__':
     learning_rate = 0.01
     learning_rate_decay = 0.95
     reg = 0.008
-    num_iters = 100
-    batch_size = 10000
+    num_iters = 5
+    batch_size = 100
     verbose = True
 
     print "Training ..."

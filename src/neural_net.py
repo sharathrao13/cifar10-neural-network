@@ -85,6 +85,8 @@ class TwoLayerNet(object):
         #############################################################################
 
         # If the targets are not given then jump out, we're done
+        print "Print Y:"
+        print y
         if y is None:
             return scores
 
@@ -97,6 +99,7 @@ class TwoLayerNet(object):
         # classifier loss. So that your results match ours, multiply the            #
         # regularization loss by 0.5                                                #
         #############################################################################
+
         delta_output = self.replace_zero_with_small_value(y-scores)
 
         data_loss = np.sum(-np.log(delta_output))
@@ -117,9 +120,6 @@ class TwoLayerNet(object):
         # grads['W1'] should store the gradient on W1, and be a matrix of same size #
         #############################################################################
 
-        print "The delta Output "
-        print np.shape(delta_output)
-
         #delta_output is examples x output size
         #Activation at layer 1 is examples x hidden_size
         #w2 is hidden_size x classes, so we need the transpose the Activation
@@ -130,6 +130,8 @@ class TwoLayerNet(object):
         delta_hidden = delta_output.dot(np.transpose(W2))*dRelu
         derivative_W1 = np.dot(np.transpose(X),delta_hidden)+reg*W1
         derivative_b1 = np.sum(delta_hidden)
+
+
 
         grads['W1'] =derivative_W1
         grads['W2'] =derivative_W2
@@ -183,6 +185,8 @@ class TwoLayerNet(object):
 
             X_batch = X[0:batch_size, :]
             y_batch = y[batch_size]
+            print "Y BAtch"
+            print y_batch
 
             #########################################################################
             #                             END OF YOUR CODE                          #
@@ -209,10 +213,10 @@ class TwoLayerNet(object):
             W2 = self.params['W2']
             b2 = self.params['b2']
 
-            W1-=learning_rate*update_to_W1
-            W2-=learning_rate*update_to_W2
-            b1-=learning_rate*update_to_b1
-            b2-=learning_rate*update_to_b2
+            W1+= -learning_rate*update_to_W1
+            W2+= -learning_rate*update_to_W2
+            b1+= -learning_rate*update_to_b1
+            b2+= -learning_rate*update_to_b2
 
 
             self.params['W1'] = W1
@@ -275,9 +279,6 @@ class TwoLayerNet(object):
         scores = self.softmax(Z_layer2)
 
         y_pred = np.argmax(scores, axis=1)
-        print "Printing some predictions "
-        print y_pred
-
 
         ###########################################################################
         #                              END OF YOUR CODE                           #
@@ -319,7 +320,7 @@ class TwoLayerNet(object):
     def softmax(self,X):
         exponent = np.exp(X)
         sum_of_exponent = self.replace_zero_with_small_value(np.sum(exponent,axis=1, keepdims=True))
-        # Collate everything to one axis so that every example has a softmax value
+        #Collate everything to one axis so that every example has a softmax value
         softmax = exponent/sum_of_exponent
         return softmax
 
