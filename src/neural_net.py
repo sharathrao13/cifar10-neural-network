@@ -115,6 +115,7 @@ class TwoLayerNet(object):
         L2_regularization=reg*0.5*(np.sum(np.square(W1))+np.sum(np.square(W2)))
 
         print "Regularization loss "
+        print L2_regularization
         loss = data_loss+L2_regularization
 
         print "Final loss "
@@ -248,7 +249,7 @@ class TwoLayerNet(object):
                 print 'iteration %d / %d: loss %f' % (it, num_iters, loss)
 
             # Every epoch, check train and val accuracy and decay learning rate.
-            if it % iterations_per_epoch == 0:
+            if False:#it % iterations_per_epoch == 0:
                 # Check accuracy
                 train_acc = (self.predict(X_batch) == y_batch).mean()
                 val_acc = (self.predict(X_val) == y_val).mean()
