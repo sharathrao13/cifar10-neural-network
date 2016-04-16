@@ -238,10 +238,10 @@ class TwoLayerNet(object):
             W2 = self.params['W2']
             b2 = self.params['b2']
 
-            W1+= -learning_rate*update_to_W1
-            W2+= -learning_rate*update_to_W2
-            b1+= -learning_rate*update_to_b1
-            b2+= -learning_rate*update_to_b2
+            W1+= -learning_rate*np.absolute(update_to_W1)
+            W2+= -learning_rate*np.absolute(update_to_W2)
+            b1+= -learning_rate*np.absolute(update_to_b1)
+            b2+= -learning_rate*np.absolute(update_to_b2)
 
             print "Printing the min of weights and biases "
             print np.amin(W1)
