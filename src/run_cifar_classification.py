@@ -2,17 +2,17 @@ import neural_net, data_utils
 import numpy as np
 
 if __name__ == '__main__':
-    X_train, y_train, X_test, y_test = data_utils.load_CIFAR10("/cs/student/sharathrao/cs291k-mp1/dataset")
+    X_train, y_train, X_test, y_test = data_utils.load_CIFAR10("C:\Users\SHARATH\Git\cs291k-mp1\dataset")
     nn = neural_net.TwoLayerNet(3072, 6144, 10, 0.01)
 
     # Find val set
     # Find good reg
 
-    learning_rate = 0.01
+    learning_rate = 0.1
     learning_rate_decay = 0.95
     reg = 0.008
-    num_iters = 15
-    batch_size = 100
+    num_iters = 20000
+    batch_size = 10000
     verbose = True
 
     print "Training ..."
