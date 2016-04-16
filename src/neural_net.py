@@ -219,11 +219,18 @@ class TwoLayerNet(object):
             update_to_W2 = grads['W2']
             update_to_b2 = grads['b2']
 
-            print "Printing the min and max of update weights and biases "
-            print np.amin(update_to_W1) + np.amax(update_to_W1)
-            print np.amin(update_to_b1) + np.amax(update_to_b1)
-            print np.amin(update_to_W2) + np.amax(update_to_W2)
-            print np.amin(update_to_b2) + np.amax(update_to_b2)
+            print "Printing the min of update weights and biases "
+            print np.amin(update_to_W1)
+            print np.amin(update_to_b1)
+            print np.amin(update_to_W2)
+            print np.amin(update_to_b2)
+
+            print "Printing the max of update weights and biases "
+            print np.amax(update_to_W1)
+            print np.amax(update_to_b1)
+            print np.amax(update_to_W2)
+            print np.amax(update_to_b2)
+
 
             W1 = self.params['W1']
             b1 = self.params['b1']
