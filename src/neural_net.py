@@ -83,8 +83,7 @@ class TwoLayerNet(object):
         Z_layer1 = np.dot(X,W1)+b1
         A_layer1 = self.leaky_relu(Z_layer1)
         Z_layer2 = np.dot(A_layer1,W2)+b2
-        exp_scores = np.exp(Z_layer2)
-        probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True)
+        scores = self.softmax(Z_layer2)
 
         #############################################################################
         #                              END OF YOUR CODE                             #
@@ -104,26 +103,19 @@ class TwoLayerNet(object):
         # regularization loss by 0.5                                                #
         #############################################################################
 
-        # diff = (scores.transpose() - y).transpose()
-        # delta_output = self.replace_zero_with_small_value(np.absolute(diff))
-        #
-        # data_loss = np.sum(-np.log(delta_output))
-        # data_loss = data_loss/float(N)
-        #
-        # L2_regularization=reg*0.5*(np.sum(np.square(W1))+np.sum(np.square(W2)))
-        # loss = data_loss+L2_regularization
+        diff = (scores.transpose() - y).transpose()
+        delta_output = self.replace_zero_with_small_value(np.absolute(diff))
 
-        # Calculating the loss
-        corect_logprobs = -np.log(probs[range(N), y])
-        data_loss = np.sum(corect_logprobs)
-        print "Intial Loss "
+        data_loss = np.sum(-np.log(delta_output))
+        data_loss = data_loss/float(N)
+
+        print "Data Loss "
         print data_loss
 
-        # Add regulatization term to loss (optional)
-        print "With Regualarization "
-        data_loss += reg/2 * (np.sum(np.square(W1)) + np.sum(np.square(W2)))
-        print data_loss
-        loss = 1./N * data_loss
+        L2_regularization=reg*0.5*(np.sum(np.square(W1))+np.sum(np.square(W2)))
+
+        print "Regularization loss "
+        loss = data_loss+L2_regularization
 
         print "Final loss "
         print loss
@@ -143,8 +135,6 @@ class TwoLayerNet(object):
         #delta_output is examples x output size
         #Activation at layer 1 is examples x hidden_size
         #w2 is hidden_size x classes, so we need the transpose the Activation
-        delta_output =probs
-        delta_output[range(N), y] -= 1
         derivative_W2 = np.dot(np.transpose(A_layer1),delta_output)+reg*W2
         derivative_b2 = np.sum(delta_output)
 
@@ -228,11 +218,11 @@ class TwoLayerNet(object):
             update_to_W2 = grads['W2']
             update_to_b2 = grads['b2']
 
-            print "Printing the minimums of update weights and biases "
-            print np.amin(update_to_W1)
-            print np.amin(update_to_b1)
-            print np.amin(update_to_W2)
-            print np.amin(update_to_b2)
+            print "Printing the min and max of update weights and biases "
+            print np.amin(update_to_W1) + np.amax(update_to_W1)
+            print np.amin(update_to_b1) + np.amax(update_to_b1)
+            print np.amin(update_to_W2) + np.amax(update_to_W2)
+            print np.amin(update_to_b2) + np.amax(update_to_b2)
 
             W1 = self.params['W1']
             b1 = self.params['b1']
@@ -303,12 +293,8 @@ class TwoLayerNet(object):
         A_layer1 = self.leaky_relu(Z_layer1)
         Z_layer2 = np.dot(A_layer1,W2)+b2
 
-        exp_scores = np.exp(Z_layer2)
-        probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True)
-        y_pred = np.argmax(probs, axis=1)
-
-        #scores = self.softmax(Z_layer2)
-        #y_pred = np.argmax(scores, axis=1)
+        scores = self.softmax(Z_layer2)
+        y_pred = np.argmax(scores, axis=1)
 
         ###########################################################################
         #                              END OF YOUR CODE                           #
@@ -369,7 +355,7 @@ class TwoLayerNet(object):
                 if X[i][j]>0:
                     X[i][j] = 1
                 else:
-                    X[i][j] = 0
+                    X[i][j] = 0.0001
         return X
 
     def replace_zero_with_small_value(self, X):
