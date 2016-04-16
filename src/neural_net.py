@@ -85,8 +85,6 @@ class TwoLayerNet(object):
         #############################################################################
 
         # If the targets are not given then jump out, we're done
-        print "Print Y:"
-        print y
         if y is None:
             return scores
 
@@ -184,9 +182,7 @@ class TwoLayerNet(object):
             #########################################################################
 
             X_batch = X[0:batch_size, :]
-            y_batch = y[batch_size]
-            print "Y BAtch"
-            print y_batch
+            y_batch = y[0:batch_size]
 
             #########################################################################
             #                             END OF YOUR CODE                          #
