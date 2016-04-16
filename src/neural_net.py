@@ -107,7 +107,7 @@ class TwoLayerNet(object):
         delta_output = self.replace_zero_with_small_value(np.absolute(diff))
 
         data_loss = np.sum(-np.log(delta_output))
-        data_loss = data_loss/float(N)
+        #data_loss = data_loss/float(N)
 
         print "Data Loss "
         print data_loss
@@ -117,6 +117,7 @@ class TwoLayerNet(object):
         print "Regularization loss "
         print L2_regularization
         loss = data_loss+L2_regularization
+        loss = loss/float(N)
 
         print "Final loss "
         print loss
