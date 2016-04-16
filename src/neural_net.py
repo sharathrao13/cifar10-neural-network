@@ -85,23 +85,6 @@ class TwoLayerNet(object):
         Z_layer2 = np.dot(A_layer1,W2)+b2
         exp_scores = np.exp(Z_layer2)
         probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True)
-        # Calculating the loss
-        corect_logprobs = -np.log(probs[range(N), y])
-        data_loss = np.sum(corect_logprobs)
-        print "Intial Loss "
-        print data_loss
-
-        # Add regulatization term to loss (optional)
-        print "With Regualarization "
-        data_loss += reg/2 * (np.sum(np.square(W1)) + np.sum(np.square(W2)))
-        print data_loss
-        loss = 1./N * data_loss
-
-        print "Final loss "
-        print loss
-
-
-
 
         #############################################################################
         #                              END OF YOUR CODE                             #
@@ -129,6 +112,21 @@ class TwoLayerNet(object):
         #
         # L2_regularization=reg*0.5*(np.sum(np.square(W1))+np.sum(np.square(W2)))
         # loss = data_loss+L2_regularization
+
+        # Calculating the loss
+        corect_logprobs = -np.log(probs[range(N), y])
+        data_loss = np.sum(corect_logprobs)
+        print "Intial Loss "
+        print data_loss
+
+        # Add regulatization term to loss (optional)
+        print "With Regualarization "
+        data_loss += reg/2 * (np.sum(np.square(W1)) + np.sum(np.square(W2)))
+        print data_loss
+        loss = 1./N * data_loss
+
+        print "Final loss "
+        print loss
 
         #############################################################################
         #                              END OF YOUR CODE                             #
