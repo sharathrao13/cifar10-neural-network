@@ -97,10 +97,10 @@ class TwoLayerNet(object):
         # classifier loss. So that your results match ours, multiply the            #
         # regularization loss by 0.5                                                #
         #############################################################################
+	diff = (scores.transpose() - y).transpose()
+        delta_output = self.replace_zero_with_small_value(np.absolute(diff))
 
-        delta_output = self.replace_zero_with_small_value(y-scores)
-
-        data_loss = np.sum(-np.log(delta_output))
+     	data_loss = np.sum(-np.log(delta_output))
         data_loss = data_loss/float(N)
 
         L2_regularization=reg*0.5*(np.sum(np.square(W1))+np.sum(np.square(W2)))
@@ -273,7 +273,7 @@ class TwoLayerNet(object):
         A_layer1 = self.leaky_relu(Z_layer1)
         Z_layer2 = np.dot(A_layer1,W2)+b2
         scores = self.softmax(Z_layer2)
-
+	print scores
         y_pred = np.argmax(scores, axis=1)
 
         ###########################################################################
