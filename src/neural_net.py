@@ -46,6 +46,8 @@ class TwoLayerNet(object):
         self.params['W2'] = np.random.randn(hidden_size, output_size) / np.sqrt(hidden_size)
         self.params['b2'] = np.zeros((1, output_size))
 
+        file = open('output_nn', 'w')
+
     def loss(self, X, y=None, reg=0.0):
         """
         Compute the loss and gradients for a two layer fully connected neural
@@ -117,7 +119,7 @@ class TwoLayerNet(object):
 
         L2_regularization=reg*0.5*(np.sum(np.square(W1))+np.sum(np.square(W2)))
 
-        print "Data Loss %s Regularization loss %s" %(data_loss,L2_regularization)
+        file.write('Data Loss %s Regularization loss %s' %(data_loss,L2_regularization))
 
         loss = data_loss+L2_regularization
         loss = loss/float(N)
@@ -271,18 +273,25 @@ class TwoLayerNet(object):
             #########################################################################
 
             if verbose:
-                print 'iteration %d / %d: loss %f' % (it, num_iters, loss)
+                val = 'iteration %d / %d: loss %f' % (it, num_iters, loss)
+                print val
+                file.write(val)
 
             # Every epoch, check train and val accuracy and decay learning rate.
             if it % 3 == 0:
                 # Check accuracy
                 train_acc = (self.predict(X_batch) == y_batch).mean()
                 val_acc = (self.predict(X_val) == y_val).mean()
-                print "Validation Accuracy: %s" %val_acc
+                val_acc = "Validation Accuracy: %s\n" %val_acc
                 train_acc_history.append(train_acc)
-                print "Training Accuracy %s " %train_acc
+                tra_acc= "Training Accuracy %s \n" %train_acc
                 val_acc_history.append(val_acc)
 
+                print val_acc
+                print tra_acc
+
+                file.write(val_acc)
+                file.write(tra_acc)
                 # Decay learning rate
                 learning_rate *= learning_rate_decay
 
@@ -363,7 +372,7 @@ class TwoLayerNet(object):
         return xw
 
     def softmax(self,X):
-        print "Maximum value to exp: %s"%(np.amax(X))
+        #print "Maximum value to exp: %s"%(np.amax(X))
         exponent = np.exp(X)
         sum_of_exponent = self.replace_zero_with_small_value(np.sum(exponent,axis=1, keepdims=True))
         #Collate everything to one axis so that every example has a softmax value

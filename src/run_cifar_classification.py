@@ -7,15 +7,16 @@ if __name__ == '__main__':
 
     # Find val set
     # Find good reg
-
-    learning_rate = 0.0000001
-    learning_rate_decay = 0.50
-    reg = 0.0000001
-    num_iters = 5
+    file = open('output_run', 'w')
+    learning_rate = 0.001
+    learning_rate_decay = 0.95
+    reg = 0.001
+    num_iters = 2
     batch_size = 1000
     verbose = True
 
-    print "Normalizing Image "
+    file.write ('Normalizing Image \n')
+
     X_train = X_train.astype(float)/255.0
     X_test = X_test.astype(float)/255.0
     mean_image_value_train = np.mean(X_train, axis=0)
@@ -26,11 +27,11 @@ if __name__ == '__main__':
     X_val = X_train[2000:3000,:]
     y_val = y_train[2000:3000]
 
-    print "Training ..."
+    file.write ('Training ... \n')
     nn.train(X_train, y_train, X_val, y_val,
              learning_rate, learning_rate_decay,
              reg, num_iters,
              batch_size, verbose)
 
-    print "Calculating Accuracy "
-    print nn.accuracy(X_test,y_test)
+    accuracy = nn.accuracy(X_test,y_test)
+    file.write ('Accuracy  ... %s'%accuracy)
