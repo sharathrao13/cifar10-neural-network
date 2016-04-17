@@ -105,7 +105,7 @@ class TwoLayerNet(object):
         #############################################################################
 
         diff = (scores.transpose() - y).transpose()
-        delta_output = self.replace_zero_with_small_value(np.absolute(diff))
+        delta_output = self.replace_zero_with_small_value(np.square(diff))
 
         data_loss = np.sum(-np.log(delta_output))
         #data_loss = data_loss/float(N)
