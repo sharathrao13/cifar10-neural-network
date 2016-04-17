@@ -274,7 +274,7 @@ class TwoLayerNet(object):
                 print 'iteration %d / %d: loss %f' % (it, num_iters, loss)
 
             # Every epoch, check train and val accuracy and decay learning rate.
-            if it % iterations_per_epoch == 0:
+            if it % 3 == 0:
                 # Check accuracy
                 train_acc = (self.predict(X_batch) == y_batch).mean()
                 val_acc = (self.predict(X_val) == y_val).mean()
@@ -363,7 +363,7 @@ class TwoLayerNet(object):
         return xw
 
     def softmax(self,X):
-        print (np.amax(X))
+        print "Maximum value to exp: %s"%(np.amax(X))
         exponent = np.exp(X)
         sum_of_exponent = self.replace_zero_with_small_value(np.sum(exponent,axis=1, keepdims=True))
         #Collate everything to one axis so that every example has a softmax value
