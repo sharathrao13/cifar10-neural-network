@@ -104,10 +104,14 @@ class TwoLayerNet(object):
         # regularization loss by 0.5                                                #
         #############################################################################
 
-        diff = (scores.transpose() - y).transpose()
-        delta_output = self.replace_zero_with_small_value(np.square(diff))
+        #diff = (scores.transpose() - y).transpose()
+        #delta_output = self.replace_zero_with_small_value(np.square(diff))
 
-        data_loss = np.sum(-np.log(delta_output))
+
+        corect_logprobs = -np.log(scores[range(N), y])
+        data_loss = np.sum(corect_logprobs)
+
+        #data_loss = -np.sum(np.log(delta_output))
         #data_loss = data_loss/float(N)
 
 
@@ -133,8 +137,11 @@ class TwoLayerNet(object):
         #delta_output is examples x output size
         #Activation at layer 1 is examples x hidden_size
         #w2 is hidden_size x classes, so we need the transpose the Activation
+
+        delta_output = scores
+        delta_output[range(N), y] -= 1
         derivative_W2 = np.dot(np.transpose(A_layer1),delta_output)+reg*W2
-        derivative_b2 = np.sum(delta_output)
+        derivative_b2 = np.sum(delta_output,axis=0,keepdims=True    )
 
         dRelu = self.derivative_leaky_relu(A_layer1)
         delta_hidden = delta_output.dot(np.transpose(W2))*dRelu
@@ -356,6 +363,7 @@ class TwoLayerNet(object):
         return xw
 
     def softmax(self,X):
+        print (np.amax(X))
         exponent = np.exp(X)
         sum_of_exponent = self.replace_zero_with_small_value(np.sum(exponent,axis=1, keepdims=True))
         #Collate everything to one axis so that every example has a softmax value
