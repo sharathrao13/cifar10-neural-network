@@ -1,4 +1,5 @@
 import numpy as np
+from random import randint
 import matplotlib.pyplot as plt
 
 
@@ -104,24 +105,18 @@ class TwoLayerNet(object):
         #############################################################################
 
         diff = (scores.transpose() - y).transpose()
-        print diff
         delta_output = self.replace_zero_with_small_value(np.absolute(diff))
 
         data_loss = np.sum(-np.log(delta_output))
         #data_loss = data_loss/float(N)
 
-        print "Data Loss "
-        print data_loss
 
         L2_regularization=reg*0.5*(np.sum(np.square(W1))+np.sum(np.square(W2)))
 
-        print "Regularization loss "
-        print L2_regularization
+        print "Data Loss %s Regularization loss %s" %(data_loss,L2_regularization)
+
         loss = data_loss+L2_regularization
         loss = loss/float(N)
-
-        print "Final loss "
-        print loss
 
         #############################################################################
         #                              END OF YOUR CODE                             #
@@ -189,7 +184,6 @@ class TwoLayerNet(object):
         val_acc_history = []
 
         for it in xrange(num_iters):
-            print 'Iteration %s'%it
             X_batch = None
             y_batch = None
 
@@ -198,8 +192,11 @@ class TwoLayerNet(object):
             # them in X_batch and y_batch respectively.                             #
             #########################################################################
 
-            X_batch = X[0:batch_size, :]
-            y_batch = y[0:batch_size]
+            end = randint(batch_size,num_train-1)
+            start = end -batch_size
+
+            X_batch = X[start:end, :]
+            y_batch = y[start:end]
 
             #########################################################################
             #                             END OF YOUR CODE                          #
@@ -221,17 +218,17 @@ class TwoLayerNet(object):
             update_to_W2 = grads['W2']
             update_to_b2 = grads['b2']
 
-            print "Printing the min of update weights and biases "
-            print np.amin(update_to_W1)
-            print np.amin(update_to_b1)
-            print np.amin(update_to_W2)
-            print np.amin(update_to_b2)
-
-            print "Printing the max of update weights and biases "
-            print np.amax(update_to_W1)
-            print np.amax(update_to_b1)
-            print np.amax(update_to_W2)
-            print np.amax(update_to_b2)
+            # print "Printing the min of update weights and biases "
+            # print np.amin(update_to_W1)
+            # print np.amin(update_to_b1)
+            # print np.amin(update_to_W2)
+            # print np.amin(update_to_b2)
+            #
+            # print "Printing the max of update weights and biases "
+            # print np.amax(update_to_W1)
+            # print np.amax(update_to_b1)
+            # print np.amax(update_to_W2)
+            # print np.amax(update_to_b2)
 
 
             W1 = self.params['W1']
@@ -244,17 +241,17 @@ class TwoLayerNet(object):
             b1+= -learning_rate*(update_to_b1)
             b2+= -learning_rate*(update_to_b2)
 
-            print "Printing the min of weights and biases "
-            print np.amin(W1)
-            print np.amin(b1)
-            print np.amin(W2)
-            print np.amin(b2)
-
-            print "Printing the max of weights and biases "
-            print np.amax(W1)
-            print np.amax(b1)
-            print np.amax(W2)
-            print np.amax(b2)
+            # print "Printing the min of weights and biases "
+            # print np.amin(W1)
+            # print np.amin(b1)
+            # print np.amin(W2)
+            # print np.amin(b2)
+            #
+            # print "Printing the max of weights and biases "
+            # print np.amax(W1)
+            # print np.amax(b1)
+            # print np.amax(W2)
+            # print np.amax(b2)
 
 
             self.params['W1'] = W1
@@ -270,11 +267,13 @@ class TwoLayerNet(object):
                 print 'iteration %d / %d: loss %f' % (it, num_iters, loss)
 
             # Every epoch, check train and val accuracy and decay learning rate.
-            if False:#it % iterations_per_epoch == 0:
+            if it % iterations_per_epoch == 0:
                 # Check accuracy
                 train_acc = (self.predict(X_batch) == y_batch).mean()
                 val_acc = (self.predict(X_val) == y_val).mean()
+                print "Validation Accuracy: %s" %val_acc
                 train_acc_history.append(train_acc)
+                print "Training Accuracy %s " %train_acc
                 val_acc_history.append(val_acc)
 
                 # Decay learning rate
@@ -317,6 +316,7 @@ class TwoLayerNet(object):
 
         scores = self.softmax(Z_layer2)
         y_pred = np.argmax(scores, axis=1)
+        #print y_pred
 
         ###########################################################################
         #                              END OF YOUR CODE                           #
@@ -351,7 +351,7 @@ class TwoLayerNet(object):
     def leaky_relu(self, xw):
         for i in range(0, np.shape(xw)[0]):
             for j in range(0, np.shape(xw)[1]):
-                xw[i][j] = max(0.01*xw[i][j], xw[i][j])
+                xw[i][j] = max(0.0001*xw[i][j], xw[i][j])
                 # print xw[i][j]
         return xw
 
@@ -377,13 +377,13 @@ class TwoLayerNet(object):
                 if X[i][j]>0:
                     X[i][j] = 1
                 else:
-                    X[i][j] = 0.0001
+                    X[i][j] = 0.00000001
         return X
 
     def replace_zero_with_small_value(self, X):
         for i in range(0, np.shape(X)[0]):
             for j in range(0, np.shape(X)[1]):
                 if(X[i][j]==0.0):
-                    X[i][j]=0.000001
+                    X[i][j]=0.00000001
 
         return X
