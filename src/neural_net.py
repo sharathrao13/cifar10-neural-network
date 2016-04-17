@@ -46,7 +46,7 @@ class TwoLayerNet(object):
         self.params['W2'] = np.random.randn(hidden_size, output_size) / np.sqrt(hidden_size)
         self.params['b2'] = np.zeros((1, output_size))
 
-        file = open('output_nn', 'w')
+        self.file_nn = open('output_nn', 'w')
 
     def loss(self, X, y=None, reg=0.0):
         """
@@ -119,7 +119,8 @@ class TwoLayerNet(object):
 
         L2_regularization=reg*0.5*(np.sum(np.square(W1))+np.sum(np.square(W2)))
 
-        file.write('Data Loss %s Regularization loss %s' %(data_loss,L2_regularization))
+        str ='Data Loss %s Regularization loss %s \n' %(data_loss,L2_regularization)
+        self.file_nn.write(str)
 
         loss = data_loss+L2_regularization
         loss = loss/float(N)
@@ -273,9 +274,9 @@ class TwoLayerNet(object):
             #########################################################################
 
             if verbose:
-                val = 'iteration %d / %d: loss %f' % (it, num_iters, loss)
+                val = 'iteration %d / %d: loss %f\n' % (it, num_iters, loss)
                 print val
-                file.write(val)
+                self.file_nn.write(val)
 
             # Every epoch, check train and val accuracy and decay learning rate.
             if it % 3 == 0:
@@ -290,8 +291,8 @@ class TwoLayerNet(object):
                 print val_acc
                 print tra_acc
 
-                file.write(val_acc)
-                file.write(tra_acc)
+                self.file_nn.write(val_acc)
+                self.file_nn.write(tra_acc)
                 # Decay learning rate
                 learning_rate *= learning_rate_decay
 
