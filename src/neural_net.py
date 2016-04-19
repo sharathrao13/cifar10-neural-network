@@ -46,7 +46,7 @@ class TwoLayerNet(object):
         self.params['W2'] = np.random.randn(hidden_size, output_size) / np.sqrt(hidden_size)
         self.params['b2'] = np.zeros((1, output_size))
 
-        self.file_nn = open('output_nn', 'w')
+
 
     def loss(self, X, y=None, reg=0.0):
         """
@@ -84,9 +84,9 @@ class TwoLayerNet(object):
         # shape (N, C).                                                             #
         #############################################################################
         Z_layer1 = np.dot(X,W1)+b1
-        A_layer1 = self.leaky_relu(Z_layer1)
+        A_layer1 = self.relu(Z_layer1)
         Z_layer2 = np.dot(A_layer1,W2)+b2
-        scores = self.softmax(Z_layer2)
+        scores = Z_layer2
 
         #############################################################################
         #                              END OF YOUR CODE                             #
@@ -106,24 +106,12 @@ class TwoLayerNet(object):
         # regularization loss by 0.5                                                #
         #############################################################################
 
-        #diff = (scores.transpose() - y).transpose()
-        #delta_output = self.replace_zero_with_small_value(np.square(diff))
-
-
-        corect_logprobs = -np.log(scores[range(N), y])
-        data_loss = np.sum(corect_logprobs)
-
-        #data_loss = -np.sum(np.log(delta_output))
-        #data_loss = data_loss/float(N)
-
-
-        L2_regularization=reg*0.5*(np.sum(np.square(W1))+np.sum(np.square(W2)))
-
-        str ='Data Loss %s Regularization loss %s \n' %(data_loss,L2_regularization)
-        self.file_nn.write(str)
+        scores = self.softmax(Z_layer2)
+        log_probabilities = -np.log(scores[range(N), y])
+        data_loss = np.sum(log_probabilities)/float(N)
+        L2_regularization=reg*0.5*(np.sum(W1*W1)+np.sum(W2*W2))
 
         loss = data_loss+L2_regularization
-        loss = loss/float(N)
 
         #############################################################################
         #                              END OF YOUR CODE                             #
@@ -143,15 +131,15 @@ class TwoLayerNet(object):
 
         delta_output = scores
         delta_output[range(N), y] -= 1
-        derivative_W2 = np.dot(np.transpose(A_layer1),delta_output)+reg*W2
-        derivative_b2 = np.sum(delta_output,axis=0,keepdims=True    )
+        delta_output/=N
 
-        dRelu = self.derivative_leaky_relu(A_layer1)
-        delta_hidden = delta_output.dot(np.transpose(W2))*dRelu
+        derivative_W2 = np.dot(np.transpose(A_layer1),delta_output)+reg*W2
+        derivative_b2 = np.sum(delta_output)
+
+
+        delta_hidden = delta_output.dot(np.transpose(W2))*self.derivative_relu(A_layer1)
         derivative_W1 = np.dot(np.transpose(X),delta_hidden)+reg*W1
         derivative_b1 = np.sum(delta_hidden)
-
-
 
         grads['W1'] =derivative_W1
         grads['W2'] =derivative_W2
@@ -194,6 +182,7 @@ class TwoLayerNet(object):
         val_acc_history = []
 
         for it in xrange(num_iters):
+
             X_batch = None
             y_batch = None
 
@@ -202,11 +191,15 @@ class TwoLayerNet(object):
             # them in X_batch and y_batch respectively.                             #
             #########################################################################
 
-            end = randint(batch_size,num_train-1)
-            start = end -batch_size
+            # end = randint(batch_size,num_train-1)
+            # start = end -batch_size
+            #
+            # X_batch = X[start:end, :]
+            # y_batch = y[start:end]
 
-            X_batch = X[start:end, :]
-            y_batch = y[start:end]
+            batch_mask = np.random.choice(num_train, batch_size)
+            X_batch = X[batch_mask]
+            y_batch = y[batch_mask]
 
             #########################################################################
             #                             END OF YOUR CODE                          #
@@ -228,19 +221,6 @@ class TwoLayerNet(object):
             update_to_W2 = grads['W2']
             update_to_b2 = grads['b2']
 
-            # print "Printing the min of update weights and biases "
-            # print np.amin(update_to_W1)
-            # print np.amin(update_to_b1)
-            # print np.amin(update_to_W2)
-            # print np.amin(update_to_b2)
-            #
-            # print "Printing the max of update weights and biases "
-            # print np.amax(update_to_W1)
-            # print np.amax(update_to_b1)
-            # print np.amax(update_to_W2)
-            # print np.amax(update_to_b2)
-
-
             W1 = self.params['W1']
             b1 = self.params['b1']
             W2 = self.params['W2']
@@ -251,19 +231,6 @@ class TwoLayerNet(object):
             b1+= -learning_rate*(update_to_b1)
             b2+= -learning_rate*(update_to_b2)
 
-            # print "Printing the min of weights and biases "
-            # print np.amin(W1)
-            # print np.amin(b1)
-            # print np.amin(W2)
-            # print np.amin(b2)
-            #
-            # print "Printing the max of weights and biases "
-            # print np.amax(W1)
-            # print np.amax(b1)
-            # print np.amax(W2)
-            # print np.amax(b2)
-
-
             self.params['W1'] = W1
             self.params['b1'] = b1
             self.params['W2'] = W2
@@ -273,28 +240,19 @@ class TwoLayerNet(object):
             #                             END OF YOUR CODE                          #
             #########################################################################
 
-            if verbose:
-                val = 'iteration %d / %d: loss %f\n' % (it, num_iters, loss)
-                print val
-                self.file_nn.write(val)
-
             # Every epoch, check train and val accuracy and decay learning rate.
-            if it % 3 == 0:
+            if it % 100 == 0:
                 # Check accuracy
                 train_acc = (self.predict(X_batch) == y_batch).mean()
                 val_acc = (self.predict(X_val) == y_val).mean()
-                val_acc = "Validation Accuracy: %s\n" %val_acc
                 train_acc_history.append(train_acc)
-                tra_acc= "Training Accuracy %s \n" %train_acc
+
+                print "iteration %d / %d: Validation Accuracy: %s Training Accuracy %s Loss %s" % (
+                it, num_iters, val_acc, train_acc, loss)
                 val_acc_history.append(val_acc)
 
-                print val_acc
-                print tra_acc
-
-                self.file_nn.write(val_acc)
-                self.file_nn.write(tra_acc)
-                # Decay learning rate
-                learning_rate *= learning_rate_decay
+            if it%500 ==0:
+                    learning_rate *= learning_rate_decay
 
         return {
             'loss_history': loss_history,
@@ -328,12 +286,11 @@ class TwoLayerNet(object):
         b2 = self.params['b2']
 
         Z_layer1 = np.dot(X,W1)+b1
-        A_layer1 = self.leaky_relu(Z_layer1)
+        A_layer1 = self.relu(Z_layer1)
         Z_layer2 = np.dot(A_layer1,W2)+b2
 
-        scores = self.softmax(Z_layer2)
-        y_pred = np.argmax(scores, axis=1)
-        #print y_pred
+        #scores = self.softmax(Z_layer2)
+        y_pred = np.argmax(Z_layer2, axis=1)
 
         ###########################################################################
         #                              END OF YOUR CODE                           #
@@ -358,50 +315,13 @@ class TwoLayerNet(object):
 
         return acc
 
-    def relu(self, xw):
-        for i in range(0, np.shape(xw)[0]):
-            for j in range(0, np.shape(xw)[1]):
-                xw[i][j] = max(0.0, xw[i][j])
-                # print xw[i][j]
-        return xw
-
-    def leaky_relu(self, xw):
-        for i in range(0, np.shape(xw)[0]):
-            for j in range(0, np.shape(xw)[1]):
-                xw[i][j] = max(0.0001*xw[i][j], xw[i][j])
-                # print xw[i][j]
-        return xw
+    def relu(self, X):
+        return np.maximum(X,0)
 
     def softmax(self,X):
-        #print "Maximum value to exp: %s"%(np.amax(X))
         exponent = np.exp(X)
-        sum_of_exponent = self.replace_zero_with_small_value(np.sum(exponent,axis=1, keepdims=True))
-        #Collate everything to one axis so that every example has a softmax value
-        softmax = exponent/sum_of_exponent
-        return softmax
+        sum_of_exponent = np.sum(exponent,axis=1, keepdims=True)
+        return exponent/sum_of_exponent
 
     def derivative_relu(self, X):
-        for i in range(0, np.shape(X)[0]):
-            for j in range(0, np.shape(X)[1]):
-                if X[i][j]>0:
-                    X[i][j] = 1
-                else:
-                    X[i][j] = 0
-        return X
-
-    def derivative_leaky_relu(self,X):
-        for i in range(0, np.shape(X)[0]):
-            for j in range(0, np.shape(X)[1]):
-                if X[i][j]>0:
-                    X[i][j] = 1
-                else:
-                    X[i][j] = 0.00000001
-        return X
-
-    def replace_zero_with_small_value(self, X):
-        for i in range(0, np.shape(X)[0]):
-            for j in range(0, np.shape(X)[1]):
-                if(X[i][j]==0.0):
-                    X[i][j]=0.00000001
-
-        return X
+        return (X>=0)

@@ -10,11 +10,9 @@ def load_CIFAR_batch(filename):
     X = datadict['data']
     Y = datadict['labels']
 
-    #X = X.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("float")
-    #Y = np.array(Y)
-    #print "The dimesions of X and Y after reshape and transpose "
-    #print np.shape(X)
-    #print np.shape(Y)
+    X = X.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("float")
+    Y = np.array(Y)
+
     return X, Y
 
 def load_CIFAR10(ROOT):
@@ -25,7 +23,6 @@ def load_CIFAR10(ROOT):
   ys = []
   for b in range(1,6):
     f = os.path.join(ROOT, 'data_batch_%d' % (b, ))
-    print f
     X, Y = load_CIFAR_batch(f)
     xs.append(X)
     ys.append(Y)    
