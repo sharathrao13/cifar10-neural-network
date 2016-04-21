@@ -1,0 +1,21 @@
+C:\Users\SHARATH\Git\cs291k-mp1\dataset/cifar-10-batches-py
+[Iteration 0 / 5000][Validation Accuracy: 0.0 ][Training Accuracy 0.134 ][Loss 2.30258553978]
+[Iteration 490 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.438 ][Loss 1.53157020753]
+[Iteration 980 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.554 ][Loss 1.3295336811]
+[Iteration 1470 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.558 ][Loss 1.31016210197]
+[Iteration 1960 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.536 ][Loss 1.30207662236]
+[Iteration 2450 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.604 ][Loss 1.14230361322]
+[Iteration 2940 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.634 ][Loss 1.0658490139]
+[Iteration 3430 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.652 ][Loss 1.05417766956]
+[Iteration 3920 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.628 ][Loss 1.10394272067]
+[Iteration 4410 / 5000][Validation Accuracy: 0.5 ][Training Accuracy 0.696 ][Loss 0.937277596306]
+[Iteration 4900 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.646 ][Loss 1.04171682699]
+********************************************************************
+Training Accuracy 69.6
+Validation Accuracy 50.0
+********************************************************************
+ Test Accuracy Top 1 ... 53.98
+ Test Accuracy Top 2 ... 73.95
+ Test Accuracy Top 3 ... 83.17
+********************************************************************
+Took 896.698999882 second

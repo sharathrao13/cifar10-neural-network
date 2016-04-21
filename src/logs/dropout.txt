@@ -1,0 +1,20 @@
+[Iteration 0 / 5000][Validation Accuracy: 0.1 ][Training Accuracy 0.134 ][Loss 2.30258568297]
+[Iteration 490 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.386 ][Loss 1.71669800695]
+[Iteration 980 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.45 ][Loss 1.6078943189]
+[Iteration 1470 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.466 ][Loss 1.63998007071]
+[Iteration 1960 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.508 ][Loss 1.53308074558]
+[Iteration 2450 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.508 ][Loss 1.48888822618]
+[Iteration 2940 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.488 ][Loss 1.4299997643]
+[Iteration 3430 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.5 ][Loss 1.51572095502]
+[Iteration 3920 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.498 ][Loss 1.43022843916]
+[Iteration 4410 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.522 ][Loss 1.44149304183]
+[Iteration 4900 / 5000][Validation Accuracy: 0.4 ][Training Accuracy 0.494 ][Loss 1.51119893069]
+********************************************************************
+Training Accuracy 52.2
+Validation Accuracy 40.0
+********************************************************************
+ Test Accuracy Top 1 ... 49.79
+ Test Accuracy Top 2 ... 69.81
+ Test Accuracy Top 3 ... 80.71
+********************************************************************
+Took 797.385999918 seconds

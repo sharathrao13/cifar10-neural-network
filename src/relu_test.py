@@ -9,5 +9,5 @@ if __name__ == '__main__':
         if i%2 ==0:
           X[i][j] = -X[i][j]
 
-    nn = neural_net.TwoLayerNet(4,4,4,0.01)
-    nn.relu(X)
+    nn = neural_net.TwoLayerNet(4,4,4,0.01,0.95)
+    print nn.Relu(X)

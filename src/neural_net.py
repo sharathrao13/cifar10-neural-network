@@ -1,6 +1,4 @@
 import numpy as np
-from random import randint
-import matplotlib.pyplot as plt
 
 
 class TwoLayerNet(object):
@@ -18,7 +16,7 @@ class TwoLayerNet(object):
     The outputs of the second fully-connected layer are the scores for each class.
     """
 
-    def __init__(self, input_size, hidden_size, output_size, std=1e-4):
+    def __init__(self, input_size, hidden_size, output_size, std=1e-4, momentum=0.9):
         """
         Initialize the model. Weights are initialized to small random values and
         biases are initialized to zero. Weights and biases are stored in the
@@ -34,19 +32,19 @@ class TwoLayerNet(object):
         - hidden_size: The number of neurons H in the hidden layer.
         - output_size: The number of classes C.
         """
+        self.momentum = momentum
+
         self.params = {}
-        # self.params['W1'] = std * np.random.randn(input_size, hidden_size)
-        # self.params['b1'] = np.zeros(hidden_size)
-        # self.params['W2'] = std * np.random.randn(hidden_size, output_size)
-        # self.params['b2'] = np.zeros(output_size)
+        self.params['W1'] = std * np.random.randn(input_size, hidden_size)
+        self.params['b1'] = np.zeros(hidden_size)
+        self.params['W2'] = std * np.random.randn(hidden_size, output_size)
+        self.params['b2'] = np.zeros(output_size)
 
-        np.random.seed(0)
-        self.params['W1'] = np.random.randn(input_size, hidden_size) / np.sqrt(input_size)
-        self.params['b1'] = np.zeros((1, hidden_size))
-        self.params['W2'] = np.random.randn(hidden_size, output_size) / np.sqrt(hidden_size)
-        self.params['b2'] = np.zeros((1, output_size))
-
-
+        self.old_weights = {}
+        self.old_weights['W1'] = self.params['W1']
+        self.old_weights['b1'] = self.params['b1']
+        self.old_weights['W2'] = self.params['W2']
+        self.old_weights['b2'] = self.params['b2']
 
     def loss(self, X, y=None, reg=0.0):
         """
@@ -83,10 +81,11 @@ class TwoLayerNet(object):
         # Store the result in the scores variable, which should be an array of      #
         # shape (N, C).                                                             #
         #############################################################################
-        Z_layer1 = np.dot(X,W1)+b1
-        A_layer1 = self.relu(Z_layer1)
-        Z_layer2 = np.dot(A_layer1,W2)+b2
-        scores = Z_layer2
+        #A_layer1, scores = self.feed_forward(X,W1,b1,W2,b2)
+
+        Z1 = X.dot(W1) + b1
+        A1 = self.Relu(Z1)
+        Z2 = A1.dot(W2) + b2
 
         #############################################################################
         #                              END OF YOUR CODE                             #
@@ -106,12 +105,13 @@ class TwoLayerNet(object):
         # regularization loss by 0.5                                                #
         #############################################################################
 
-        scores = self.softmax(Z_layer2)
-        log_probabilities = -np.log(scores[range(N), y])
-        data_loss = np.sum(log_probabilities)/float(N)
-        L2_regularization=reg*0.5*(np.sum(W1*W1)+np.sum(W2*W2))
+        #Use this log(p/q) = logp-logq
+        softmax_numerator = np.exp(Z2)
+        softmax_denominator = np.sum(softmax_numerator, axis=1)
+        data_loss = np.sum(-Z2[range(N), y] + np.log(softmax_denominator)) / N
+        regularization_loss = self.calculate_L2_regularization(W1, W2, reg)
 
-        loss = data_loss+L2_regularization
+        loss = data_loss + regularization_loss
 
         #############################################################################
         #                              END OF YOUR CODE                             #
@@ -125,26 +125,26 @@ class TwoLayerNet(object):
         # grads['W1'] should store the gradient on W1, and be a matrix of same size #
         #############################################################################
 
-        #delta_output is examples x output size
-        #Activation at layer 1 is examples x hidden_size
-        #w2 is hidden_size x classes, so we need the transpose the Activation
+        d_A2 = 1.0
+        d_Z2 = (softmax_numerator.T / softmax_denominator).T
+        ground_truth = self.get_ground_truth(N, d_Z2, y)
+        d_Z2 = ((d_Z2 - ground_truth)/float(N))*d_A2
 
-        delta_output = scores
-        delta_output[range(N), y] -= 1
-        delta_output/=N
+        d_A1 = d_Z2.dot(W2.T)
+        d_Z1 = d_A1 * self.derivative_relu(Z1)
 
-        derivative_W2 = np.dot(np.transpose(A_layer1),delta_output)+reg*W2
-        derivative_b2 = np.sum(delta_output)
+        dW1 = X.T.dot(d_Z1)
+        dW2 = A1.T.dot(d_Z2)
+        db1 = np.sum(d_Z1, axis=0)
+        db2 = np.sum(d_Z2, axis=0)
 
+        dW1 += reg * W1
+        dW2 += reg * W2
 
-        delta_hidden = delta_output.dot(np.transpose(W2))*self.derivative_relu(A_layer1)
-        derivative_W1 = np.dot(np.transpose(X),delta_hidden)+reg*W1
-        derivative_b1 = np.sum(delta_hidden)
-
-        grads['W1'] =derivative_W1
-        grads['W2'] =derivative_W2
-        grads['b1'] =derivative_b1
-        grads['b2'] =derivative_b2
+        grads['W1'] = dW1
+        grads['W2'] = dW2
+        grads['b1'] = db1
+        grads['b2'] = db2
 
         #############################################################################
         #                              END OF YOUR CODE                             #
@@ -180,6 +180,10 @@ class TwoLayerNet(object):
         loss_history = []
         train_acc_history = []
         val_acc_history = []
+        best_val_acc = 0.0
+        best_model = {}
+        #To hold the best validation model, so that it can be used for
+        #predictions
 
         for it in xrange(num_iters):
 
@@ -191,12 +195,6 @@ class TwoLayerNet(object):
             # them in X_batch and y_batch respectively.                             #
             #########################################################################
 
-            # end = randint(batch_size,num_train-1)
-            # start = end -batch_size
-            #
-            # X_batch = X[start:end, :]
-            # y_batch = y[start:end]
-
             batch_mask = np.random.choice(num_train, batch_size)
             X_batch = X[batch_mask]
             y_batch = y[batch_mask]
@@ -206,7 +204,7 @@ class TwoLayerNet(object):
             #########################################################################
 
             # Compute loss and gradients using the current minibatch
-            loss, grads = self.loss(X_batch, y=y_batch, reg=reg)
+            loss, grads = self.loss(X_batch,y=y_batch, reg=reg)
             loss_history.append(loss)
 
             #########################################################################
@@ -216,20 +214,27 @@ class TwoLayerNet(object):
             # stored in the grads dictionary defined above.                         #
             #########################################################################
 
-            update_to_W1 = grads['W1']
-            update_to_b1 = grads['b1']
-            update_to_W2 = grads['W2']
-            update_to_b2 = grads['b2']
-
             W1 = self.params['W1']
             b1 = self.params['b1']
             W2 = self.params['W2']
             b2 = self.params['b2']
 
-            W1+= -learning_rate*(update_to_W1)
-            W2+= -learning_rate*(update_to_W2)
-            b1+= -learning_rate*(update_to_b1)
-            b2+= -learning_rate*(update_to_b2)
+            #Use this for SGD
+            # W1+= -learning_rate*(grads['W1'])
+            # W2+= -learning_rate*(grads['W2'])
+            # b1+= -learning_rate*(grads['b1'])
+            # b2+= -learning_rate*(grads['b2'])
+
+            #Use this for momentum
+            self.old_weights['W1'] = self.momentum * self.old_weights['W1'] - learning_rate * grads['W1']
+            self.old_weights['W2'] = self.momentum * self.old_weights['W2'] - learning_rate * grads['W2']
+            self.old_weights['b1'] = self.momentum * self.old_weights['b1'] - learning_rate * grads['b1']
+            self.old_weights['b2'] = self.momentum * self.old_weights['b2'] - learning_rate * grads['b2']
+
+            W1+= self.old_weights['W1']
+            W2+= self.old_weights['W2']
+            b1+= self.old_weights['b1']
+            b2+= self.old_weights['b2']
 
             self.params['W1'] = W1
             self.params['b1'] = b1
@@ -241,24 +246,40 @@ class TwoLayerNet(object):
             #########################################################################
 
             # Every epoch, check train and val accuracy and decay learning rate.
-            if it % 100 == 0:
-                # Check accuracy
-                train_acc = (self.predict(X_batch) == y_batch).mean()
-                val_acc = (self.predict(X_val) == y_val).mean()
-                train_acc_history.append(train_acc)
+            if verbose and (it ==0 or (it) % (iterations_per_epoch*5) == 0):
 
-                print "iteration %d / %d: Validation Accuracy: %s Training Accuracy %s Loss %s" % (
-                it, num_iters, val_acc, train_acc, loss)
+                train_acc = self.find_mean(X_batch, y_batch)
+                val_acc = self.find_mean(X_val, y_val)
+
+                train_acc_history.append(train_acc)
                 val_acc_history.append(val_acc)
 
-            if it%500 ==0:
-                    learning_rate *= learning_rate_decay
+                print "[Iteration %d / %d][Validation Accuracy: %s ][Training Accuracy %s ][Loss %s]" % (
+                it, num_iters, val_acc, train_acc, loss)
+
+                if val_acc > best_val_acc:
+                    best_val_acc = val_acc
+                    best_model['W1'] = W1
+                    best_model['b1'] = b1
+                    best_model['W2'] = W2
+                    best_model['b2'] = b2
+
+            if (it+1) % iterations_per_epoch == 0:
+                learning_rate *= learning_rate_decay
+
+        #Set the global weights with best validation model weights
+        self.params['W1'] = best_model['W1']
+        self.params['b1'] = best_model['b1']
+        self.params['W2'] = best_model['W2']
+        self.params['b2'] = best_model['b2']
 
         return {
             'loss_history': loss_history,
             'train_acc_history': train_acc_history,
             'val_acc_history': val_acc_history,
         }
+
+
 
     def predict(self, X):
         """
@@ -280,23 +301,27 @@ class TwoLayerNet(object):
         ###########################################################################
         # TODO: Implement this function; it should be VERY simple!                #
         ###########################################################################]
-        W1 = self.params['W1']
-        W2 = self.params['W2']
-        b1 = self.params['b1']
-        b2 = self.params['b2']
 
-        Z_layer1 = np.dot(X,W1)+b1
-        A_layer1 = self.relu(Z_layer1)
-        Z_layer2 = np.dot(A_layer1,W2)+b2
-
-        #scores = self.softmax(Z_layer2)
-        y_pred = np.argmax(Z_layer2, axis=1)
+        scores = self.get_score(X)
+        return np.argmax(scores, axis=1)
 
         ###########################################################################
         #                              END OF YOUR CODE                           #
         ###########################################################################
 
-        return y_pred
+    def get_score(self, X):
+
+        W1 = self.params['W1']
+        W2 = self.params['W2']
+        b1 = self.params['b1']
+        b2 = self.params['b2']
+
+
+        Z1 = X.dot(W1) + b1
+        A1 = self.Relu(Z1)
+        Z2 = A1.dot(W2) + b2
+
+        return Z2
 
     def accuracy(self, X, y):
         """
@@ -311,17 +336,69 @@ class TwoLayerNet(object):
         - acc: Accuracy
 
         """
-        acc = (self.predict(X) == y).mean()
 
-        return acc
+        scores = self.get_score(X)
 
-    def relu(self, X):
-        return np.maximum(X,0)
+        score1 = np.argmax(scores,axis=1)
+        for i in range(0,scores.shape[0]):
+            scores[i][score1[i]] = -1;
 
-    def softmax(self,X):
-        exponent = np.exp(X)
-        sum_of_exponent = np.sum(exponent,axis=1, keepdims=True)
-        return exponent/sum_of_exponent
+        score2 = np.argmax(scores,axis=1)
+        for i in range(0,scores.shape[0]):
+            scores[i][score2[i]] = -1;
 
-    def derivative_relu(self, X):
-        return (X>=0)
+        score3 = np.argmax(scores,axis=1)
+
+        top1 = (score1 == y).mean()
+        top2 =0
+        top3 =0
+
+        for i in range (0,y.shape[0]):
+            if (y[i]==score1[i]) or (y[i] ==score2[i]) or (y[i] ==score3[i]):
+                top3+=1
+
+            if (y[i]==score1[i]) or (y[i] ==score2[i]):
+                top2+=1
+
+        top2 = float(top2)/float(y.shape[0])
+        top3 = float(top3)/float(y.shape[0])
+        return (top1, top2, top3)
+
+    def derivative_relu(self, Z1):
+        return (Z1 >= 0)
+
+    def Relu(self, Z1):
+        return Z1 * (Z1 > 0)
+
+    def derivative_tanh(self, tan_h):
+        # Please note the value provided is tanh(X) and not X
+        return (1 - np.power(tan_h, 2))
+
+    def tanh(self, Z1):
+        return np.tanh(Z1)
+
+    def derivative_leaky_relu(self, Z1):
+        for i in range (0, Z1.shape[0]):
+            for j in range (0,Z1.shape[1]):
+                if(Z1[i][j] <0):
+                    Z1[i][j]= 0.01
+        return Z1
+
+    def leaky_relu(self, Z1):
+        for i in range (0, Z1.shape[0]):
+            for j in range (0,Z1.shape[1]):
+                if(Z1[i][j] <0):
+                    Z1[i][j]= 0.01*Z1[i][j]
+        return Z1
+
+
+    def calculate_L2_regularization(self, W1, W2, reg):
+        return 0.5 * reg * (np.sum(W1 * W1) + np.sum(W2 * W2))
+
+    def find_mean(self, X, y):
+        return (self.predict(X) == y).mean()
+
+    def get_ground_truth(self, N, d_Z2, y):
+        ground_truth = np.zeros(d_Z2.shape)
+        ground_truth[range(N), y] = 1
+        return ground_truth

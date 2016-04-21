@@ -17,8 +17,6 @@ def load_CIFAR_batch(filename):
 
 def load_CIFAR10(ROOT):
   """ load all of cifar """
-  print "Loading CIFAR data"
-
   xs = []
   ys = []
   for b in range(1,6):
@@ -31,4 +29,3 @@ def load_CIFAR10(ROOT):
   del X, Y
   Xte, Yte = load_CIFAR_batch(os.path.join(ROOT, 'test_batch'))
   return Xtr, Ytr, Xte, Yte
-
