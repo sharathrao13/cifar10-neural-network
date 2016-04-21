@@ -9,7 +9,7 @@ if __name__ == '__main__':
     input_size = 3072
     hidden_size = 500
     output_size =10
-    momentum =0.9
+    momentum =0.95
 
     X_train, y_train, X_test, y_test = data_utils.load_CIFAR10("C:\Users\SHARATH\Git\cs291k-mp1\dataset")
     nn = neural_net.TwoLayerNet(input_size, hidden_size, output_size, 0.00001, momentum)
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     learning_rate = 0.0001
     learning_rate_decay = 0.95
     reg = 0.01
-    num_iters = 1000
+    num_iters = 20000
     batch_size = 500
     verbose = True
 

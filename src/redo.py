@@ -28,7 +28,7 @@ if __name__ == '__main__':
     learning_rate = 0.0001
     learning_rate_decay = 0.95
     reg = 0.01
-    num_iters = 200
+    num_iters = 20000
     batch_size = 500
     verbose = True
 
